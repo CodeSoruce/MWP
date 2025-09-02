@@ -18,4 +18,4 @@ The source code of each algorithm for k-MWP identification (i.e., Base, MWPA-, M
 
 ## Datasets
 
-We provide five sample datasets in the folder "dataset" for testing, g1 - g3.
+We provide three sample datasets in the folder "dataset" for testing, g1 - g3.
