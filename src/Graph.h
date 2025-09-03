@@ -46,13 +46,13 @@ private:
 
     void coloring();
 
-    ui findMaxWeightSum(vector<ui> ids, ui* color, ui size);
-
     void output_one_kplex();
 
     void output_one_kplex_old(ui *rid_old);
 
     void verify_kplex();
+
+    ui findMaxWeightSum(vector<ui> ids, ui* color, ui size);
 
 
     ui count_uw(ui u, ept *pstart);

@@ -282,7 +282,7 @@ private:
             for(ui i = idx;i < n;i ++) {
                 best_solution[i-idx] = peel_sequence[i];
             }
-            printf("cms-dengen: %u with size %u\n", best_solution_weight, best_solution_size);
+            printf("*** CMS-Degeneracy: %u with size %u\n", best_solution_weight, best_solution_size);
             unsigned int new_q = (best_solution_weight + mw - 1) / mw;
             if (new_q > q) q = new_q;
         }

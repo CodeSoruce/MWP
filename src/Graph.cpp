@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include "KPlex_BB_matrix.h"
+#include <iomanip>
 
 using namespace std;
 
@@ -113,6 +114,8 @@ void Graph::read_graph() {
         }
         pstart[i + 1] = pstart[i] + degree[i];
     }
+  
+    
 
     fclose(f);
 
@@ -126,8 +129,6 @@ void Graph::read_graph() {
         old_w[i] = weight[i];
         if (mw < weight[i]) mw = weight[i];
     }
-
-
     fclose(f);
 }
 
@@ -142,6 +143,7 @@ void Graph::exact(ui mode) {
     kplex.clear();
     coloring();
     heuristic_kplex_max_degree(50);
+    
     auto end_h = std::chrono::high_resolution_clock::now();
     auto elapsed_h = std::chrono::duration_cast<std::chrono::microseconds>(end_h - start);
     printf("Time: %lld (microseconds)\n", elapsed_h.count());
@@ -211,8 +213,7 @@ void Graph::exact(ui mode) {
     delete kplex_solver_m;
     auto end_s = std::chrono::high_resolution_clock::now();
     auto elapsed_s = std::chrono::duration_cast<std::chrono::microseconds>(end_s - end_p);
-    printf("*** Search time: %lld (microseconds)\n", elapsed_s);
-    printf("\tMaximum kPlex Size: %lu Weight: %lu, Total Time: %lld (microseconds)\n", kplex.size(), max_weight, std::chrono::duration_cast<std::chrono::microseconds>(end_s - start));
+    printf("*** Search time: %lld (microseconds), Total Time: %lld (microseconds)\n", elapsed_s, std::chrono::duration_cast<std::chrono::microseconds>(end_s - start));
     if (max_weight > old) {
         output_one_kplex();
     }
@@ -226,7 +227,22 @@ void Graph::exact(ui mode) {
             kplex[i] = out_mapping[kplex[i]];
         }
     }
+    cout << "===== k-MWP Result =====" << endl;
+    cout << left << setw(10) << "Vertex" << setw(10) << "Weight" << endl;
+    cout << "------------------------" << endl;
 
+    int total_weight = 0;
+    for(ui i = 0; i < kplex.size(); i++) {
+        int w = old_w[kplex[i]];
+        total_weight += w;
+        cout << left << setw(10) << kplex[i] 
+            << setw(10) << w << endl;
+    }
+
+    cout << "------------------------" << endl;
+    cout << left << setw(10) << "k-MWP Size: " << setw(10) << kplex.size() << endl;
+    cout << left << setw(10) << "Total Weight: " << setw(10) << total_weight << endl;
+    cout << "========================" << endl;
     delete[] out_mapping;
     delete[] rid;
     delete[] rid_old;
@@ -797,6 +813,7 @@ ui Graph::findMaxWeightSum(vector<ui> ids, ui* color, ui size) {
     return totalWeightSum;
 }
 
+
 void Graph::output_one_kplex() {
     FILE* fout = Utility::open_file("kplexes.txt", "w");
     fprintf(fout, "%lu\n", kplex.size());
@@ -827,7 +844,6 @@ void Graph::verify_kplex() {
         ++idx;
         if (kplex_size == n) {
             kplex_size = kplex_n;
-            printf("k-plex sizes: %u\n", kplex_size);
         }
         if (kplex_n != kplex_size) printf("!!! WA k-plex size: %u!\n", kplex_n);
         vector<ui> kplex;
@@ -839,6 +855,7 @@ void Graph::verify_kplex() {
 
         for (ui i = 0; i < kplex.size(); i++) {
             if (vis[kplex[i]]) {
+                //printf("WA k-plex! Duplicate vertex: %u\n", idx);
                 ok = 0;
                 break;
             }
@@ -847,14 +864,16 @@ void Graph::verify_kplex() {
         for (ui i = 0; i < kplex.size(); i++) {
             ui d = 0;
             for (ui j = pstart[kplex[i]]; j < pstart[kplex[i] + 1]; j++) if (vis[edges[j]]) ++d;
+            //for(ui i = pstart[1]; i < pstart[2]; i++) {cout<<edges[i]<<" ";}
             if (d + K < kplex.size()) {
                 ok = 0;
+                //printf("WA k-plex! Not enough neighbors!\n");
             }
         }
         for (ui i = 0; i < kplex.size(); i++) vis[kplex[i]] = 0;
     }
-    if (ok) printf("Correct k-plexes!\n");
-    if (!ok) printf("K-plexes not correctly read!\n");
+    if (ok) printf("Correct k-MWP!\n");
+    if (!ok) printf("k-MWP not correctly read!\n");
     fclose(fin);
 
     delete[] vis;
